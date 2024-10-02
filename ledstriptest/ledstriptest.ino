@@ -8,12 +8,23 @@
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
+float ActivationFloat = 1;
+bool AlreadyActivated;
+
+// Variables to manage the transition state
+bool transitioning = false;
+int transitionStep = 0;
+int maxTransitionStep = 255;
+
 int section1[] = {0, 116};
 int section2[] = {117, 231};
 int section3[] = {232, 345};
 int section4[] = {346, 461};
 
 void setup() {
+  Serial.begin(9600);
+
+  AlreadyActivated = 0;
 #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
   clock_prescale_set(clock_div_1);
 #endif
@@ -23,10 +34,20 @@ void setup() {
 }
 
 void loop() {
-  //StartUpAnimation();
-  //Yellow();
-  //rainbowLoop();
-  LavaLampAnimation(pixels.Color(0, 0, 255), pixels.Color(255, 0, 0));
+  Serial.print("ActivationFloat: ");
+  Serial.println(ActivationFloat);
+  Serial.print("AlreadyActivated: ");
+  Serial.println(AlreadyActivated);
+
+  if (ActivationFloat == 0) {
+    IdleMode();
+  } else {
+    if (!AlreadyActivated) {
+      TransitionStep();
+    } else {
+      TouchedMode();
+    }
+  }
 }
 
 void setSectionColor(int section[], uint32_t color) {
@@ -43,8 +64,47 @@ void setTubeColor(uint32_t color) {
   setSectionColor(section4, color);
 }
 
-// TEST ANIMATION
+//FINAL ANIMATION
+void IdleMode(){
+  // Test modes
+  //StartUpAnimation();
+  //Yellow();
+  //rainbowLoop();
+  //LavaLampAnimation(pixels.Color(0, 0, 255), pixels.Color(255, 0, 0));
+  testHeartbeat();
+}
 
+void TransitionStep() {
+  if (!transitioning) {
+    transitioning = true;
+    transitionStep = 0;
+  }
+
+  // Phase 1: Transition from blue (RGB: 0, 255, 255) to green (RGB: 0, 255, 0)
+  if (transitionStep <= maxTransitionStep) {
+    setTubeColor(pixels.Color(0, transitionStep, 255 - transitionStep));  // Reduce blue, increase green
+    transitionStep++;
+  } 
+  // Phase 2: Transition from green (RGB: 0, 255, 0) to yellow (RGB: 255, 255, 0)
+  else if (transitionStep > maxTransitionStep && transitionStep <= maxTransitionStep * 2) {
+    int step = transitionStep - maxTransitionStep;
+    setTubeColor(pixels.Color(step, 196, 0));  // Increase red to transition to yellow
+    transitionStep++;
+  } 
+  // End transition
+  else {
+    transitioning = false;
+    AlreadyActivated = true;
+  }
+}
+
+void TouchedMode() {
+  if (ActivationFloat == 1) {
+    setTubeColor(pixels.Color(255, 196, 0));  // Set color to yellow
+  }
+}
+
+// TEST ANIMATION
 void StartUpAnimation(){
   testAnimation(pixels.Color(0, 255, 0));
   testAnimation(pixels.Color(255, 0, 0));
@@ -74,6 +134,21 @@ void testAnimation(uint32_t color) {
 
     pixels.show();
   }
+}
+
+void testHeartbeat() {
+  for (int i = 0; i <= 255; i++) {
+    setTubeColor(pixels.Color(i, i, 255));
+  }
+ 
+  for (int i = 255; i > 0; i--) {
+    setTubeColor(pixels.Color(i, i, 255));
+  }
+}
+
+void FlyingLight() {
+  testAnimation(pixels.Color(255, 0, 0));
+  testAnimation(pixels.Color(255, 0, 0));
 }
 
 void Yellow(){
