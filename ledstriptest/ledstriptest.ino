@@ -23,9 +23,10 @@ void setup() {
 }
 
 void loop() {
-  StartUpAnimation();
-  Yellow();
-  rainbowLoop();
+  //StartUpAnimation();
+  //Yellow();
+  //rainbowLoop();
+  LavaLampAnimation(pixels.Color(0, 0, 255), pixels.Color(255, 0, 0));
 }
 
 void setSectionColor(int section[], uint32_t color) {
@@ -77,6 +78,24 @@ void testAnimation(uint32_t color) {
 
 void Yellow(){
   testAnimation(pixels.Color(255, 255, 0));
+}
+
+void LavaLampAnimation(uint32_t color, uint32_t Standardcolor){
+  setSectionColor(section2, Standardcolor);  
+  setSectionColor(section3, Standardcolor);  
+  setSectionColor(section4, Standardcolor);
+  int maxSteps = max(max(section1[1] - section1[0], section2[1] - section2[0]),
+                     max(section3[1] - section3[0], section4[1] - section4[0]));
+
+  for (int step = 0; step <= maxSteps; step++) {
+    if (section1[0] + step <= section1[1]) {
+      pixels.setPixelColor(section1[0] + step, color);
+    }
+
+    pixels.show();
+  }
+
+  testAnimation(pixels.Color(255, 0, 0));
 }
 
 void rainbowLoop() {
