@@ -24,6 +24,8 @@ void setup() {
 
 void loop() {
   StartUpAnimation();
+  Yellow();
+  rainbowLoop();
 }
 
 void setSectionColor(int section[], uint32_t color) {
@@ -73,6 +75,9 @@ void testAnimation(uint32_t color) {
   }
 }
 
+void Yellow(){
+  testAnimation(pixels.Color(255, 255, 0));
+}
 
 void rainbowLoop() {
   int discospeed = 50;
