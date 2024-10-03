@@ -8,7 +8,7 @@
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-float ActivationFloat = 1;
+float ActivationFloat = 0;
 bool AlreadyActivated;
 
 // Variables to manage the transition state
@@ -40,7 +40,9 @@ void loop() {
   Serial.println(AlreadyActivated);
 
   if (ActivationFloat == 0) {
-    IdleMode();
+    Red();
+    //GLOWColor();
+    //IdleMode();
   } else {
     if (!AlreadyActivated) {
       TransitionStep();
@@ -71,7 +73,7 @@ void IdleMode(){
   //Yellow();
   //rainbowLoop();
   //LavaLampAnimation(pixels.Color(0, 0, 255), pixels.Color(255, 0, 0));
-  testHeartbeat();
+  //testHeartbeat();
 }
 
 void TransitionStep() {
@@ -153,6 +155,14 @@ void FlyingLight() {
 
 void Yellow(){
   testAnimation(pixels.Color(255, 255, 0));
+}
+
+void Red(){
+  testAnimation(pixels.Color(255, 0, 0));
+}
+
+void GLOWColor(){
+  testAnimation(pixels.Color(255, 0, 255));
 }
 
 void LavaLampAnimation(uint32_t color, uint32_t Standardcolor){
