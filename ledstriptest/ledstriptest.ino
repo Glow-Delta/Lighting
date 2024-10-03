@@ -8,10 +8,10 @@
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
-int section1[] = {0, 116};
-int section2[] = {117, 231};
-int section3[] = {232, 345};
-int section4[] = {346, 461};
+int section1[] = {0, 116}; // inicio
+int section2[] = {117, 231}; // segundo (paralelo)
+int section3[] = {232, 345}; // terceiro
+int section4[] = {346, 461}; // quarto (paralelo de novo)
 
 void setup() {
 #if defined(__AVR_ATtiny85__) && (F_CPU == 16000000)
@@ -23,7 +23,7 @@ void setup() {
 }
 
 void loop() {
-  StartUpAnimation();
+  testHeartbeat();
 }
 
 void setSectionColor(int section[], uint32_t color) {
@@ -106,4 +106,19 @@ void rainbowLoop() {
   for (int i = 255; i >= 0; i-=discospeed) {
     setTubeColor(pixels.Color(255, 0, i));
   }
+}
+
+
+// HEART BEAT ANIMATION TEST
+
+void testHeartbeat() {
+  for (int i = 0; i <= 255; i++) {
+      setTubeColor(pixels.Color(i, i, 189));
+  }
+
+    for (int i = 255; i > 0; i--) {
+      setTubeColor(pixels.Color(i, i, 189));
+  }
+
+  
 }
