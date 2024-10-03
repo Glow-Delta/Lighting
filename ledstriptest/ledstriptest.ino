@@ -23,7 +23,10 @@ void setup() {
 }
 
 void loop() {
-  testHeartbeat();
+  // testHeartbeat();
+  //setTubeColor(pixels.Color(255, 0, 0));
+  //givingLife1();
+  pixelConcept(pixels.Color(255, 0, 200));
 }
 
 void setSectionColor(int section[], uint32_t color) {
@@ -46,6 +49,25 @@ void StartUpAnimation(){
   testAnimation(pixels.Color(0, 255, 0));
   testAnimation(pixels.Color(255, 0, 0));
   testAnimation(pixels.Color(0, 0, 255));
+}
+
+void pixelConcept(uint32_t color) {
+  setTubeColor(pixels.Color(0, 0, 30));
+  int maxSteps = section1[1] - section1[0];
+  for (int step = 0; step <= maxSteps + 40 ; step++) {
+    if (section1[0] + step <= section1[1]) {
+      pixels.setPixelColor(section1[0] + step, color);
+      pixels.setPixelColor(section1[0] + step - 20, pixels.Color(0, 0, 30));
+    }
+
+    //if (section2[0] + step <= section2[1]) {
+    //  pixels.setPixelColor(section2[1] - step + 30, pixels.Color(0, 0, 30));
+    //  pixels.setPixelColor(section2[1] - step + 30, pixels.Color(255, 0, 0));
+    //}
+
+
+    pixels.show();
+  }
 }
 
 void testAnimation(uint32_t color) {
@@ -112,13 +134,33 @@ void rainbowLoop() {
 // HEART BEAT ANIMATION TEST
 
 void testHeartbeat() {
-  for (int i = 0; i <= 255; i++) {
-      setTubeColor(pixels.Color(i, i, 189));
+  for (int i = 0; i <= 255; i+=5) {
+    setTubeColor(pixels.Color(i, i, 189));
   }
 
-    for (int i = 255; i > 0; i--) {
-      setTubeColor(pixels.Color(i, i, 189));
+  for (int i = 255; i > 0; i-=5) {
+    setTubeColor(pixels.Color(i, i, 189));
   }
 
   
+}
+
+// giving the pillar life - yellow to orange transition
+
+void givingLife1() {
+   for (int i = 0; i <= 100; i+=5) {
+    setTubeColor(pixels.Color(255, 0 + i, 0));
+  }
+
+  for (int i = 0; i <= 100; i+=5) {
+    setTubeColor(pixels.Color(255, 100 - i, 0));
+  }
+
+     for (int i = 0; i <= 100; i+=25) {
+    setTubeColor(pixels.Color(255, 0 + i, 0));
+  }
+
+  for (int i = 0; i <= 100; i+=25) {
+    setTubeColor(pixels.Color(255, 100 - i, 0));
+  }
 }
