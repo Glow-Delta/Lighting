@@ -7,6 +7,7 @@ CRGB leds[NUMPIXELS];
 bool isRed = true;
 
 void setup() {
+  //FastLED initialization takes 12 microseconds
   FastLED.addLeds<NEOPIXEL, PIN>(leds, NUMPIXELS);
 }
 
