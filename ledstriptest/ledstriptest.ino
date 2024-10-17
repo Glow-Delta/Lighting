@@ -1,9 +1,11 @@
-#include <FastLED.h>
+//Sketch uses 4072 bytes (1%) of program storage space. Maximum is 253952 bytes.
+//Global variables use 1500 bytes (18%) of dynamic memory, leaving 6692 bytes for local variables. Maximum is 8192 bytes.
 
+#include <FastLED.h>
 #define PIN        6
 #define NUMPIXELS  461
-CRGB leds[NUMPIXELS];
 
+CRGB leds[NUMPIXELS];
 bool isRed = true;
 
 void setup() {
