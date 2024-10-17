@@ -7,8 +7,7 @@ CRGB leds[NUMPIXELS];
 bool isRed = true;
 
 void setup() {
-  //FastLED initialization takes 12 microseconds
-  FastLED.addLeds<NEOPIXEL, PIN>(leds, NUMPIXELS);
+
 }
 
 void loop() {
@@ -16,7 +15,7 @@ void loop() {
 }
 
 void fastLedUpdate() {
-  //switch from Blue to Red takes between ~1-2 milliseconds
+  FastLED.addLeds<NEOPIXEL, PIN>(leds, NUMPIXELS);
   if (isRed) {
     fill_solid(leds, NUMPIXELS, CRGB::Blue);
   } else {
