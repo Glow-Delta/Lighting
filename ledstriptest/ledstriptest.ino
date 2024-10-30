@@ -10,6 +10,10 @@ CRGB* leds;
 CRGB yellow = CRGB(255, 163, 3);
 CRGB cyan = CRGB(0, 255, 255);
 CRGB pink = CRGB(252, 3, 94);
+CRGB blue = CRGB(0, 0, 255);
+CRGB purple = CRGB(128, 0, 128);
+CRGB red = CRGB(255, 0, 0);
+CRGB orange = CRGB(255, 165, 0);
 
 unsigned long lightTimer = millis();
 
@@ -28,22 +32,25 @@ Section sections[] = {
 void setup() {
   leds = new CRGB[NUM_LEDS];
   FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+  Serial.begin(9600); // Initialize serial communication
 }
 
 void loop() {
-  int tempIntSensorCount = 2;
+  static int tempIntSensorCount = -0; // Initialize sensor count
+
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n'); // Read input until newline
+    tempIntSensorCount = input.toInt(); // Convert input to integer
+  }
 
   if (tempIntSensorCount == 0) {
     IdleAnimation();
-  }
-  if (tempIntSensorCount > 1 && tempIntSensorCount < 4) {
+  } else if (tempIntSensorCount > 1 && tempIntSensorCount < 4) {
     FirstStage();
-  }
-  if (tempIntSensorCount >= 4 && tempIntSensorCount < 8) {
+  } else if (tempIntSensorCount >= 4 && tempIntSensorCount < 8) {
     SecondStage();
-  }
-  if (tempIntSensorCount >= 8) {
-    ThirdStage();
+  } else if (tempIntSensorCount >= 8) {
+    SimplisticThirdStage();
   }
 }
 
@@ -87,6 +94,28 @@ void FirstStage() {
   }
 }
 
+void SimplisticThirdStage() {
+  CRGB colors[6] = { pink, purple, red, orange, yellow, blue };
+  int numColors = sizeof(colors) / sizeof(colors[0]);
+  static int currentColor = 0;
+  const int numSteps = sections[0].end - sections[0].start + 1;
+
+  for (int step = 0; step < numSteps; step++) {
+    for (int section = 0; section < 4; section++) {
+      int ledIndex = sections[section].start + step;
+      if (ledIndex <= sections[section].end) {
+        leds[ledIndex] = colors[currentColor];
+      }
+    }
+    FastLED.show();
+  }
+  if (currentColor < numColors) {
+    currentColor++;
+  } else {
+    currentColor = 0;
+  }
+}
+
 void ThirdStage() {
   if ((millis() - lightTimer) > 33) {
     static int shift = 0;
@@ -100,17 +129,7 @@ void ThirdStage() {
       int sectionLength = sections[s].end - sections[s].start + 1;
 
       for (int pos = sectionLength - 1; pos >= 0; pos--) {
-        int ledIndex;
-
-        /*
-        if (s % 2 == 0) {
-          ledIndex = sections[s].start + pos;  // Even sections: still from start to end
-        } else {
-          ledIndex = sections[s].end - (sectionLength - 1 - pos);  // Odd sections: now reverse from end to start
-        }
-      */
-
-        ledIndex = sections[s].end - pos;
+        int ledIndex = sections[s].end - pos;
 
         int gradientPos = map((pos + shift) % sectionLength, 0, sectionLength - 1, 0, 255);
         CRGB color;
