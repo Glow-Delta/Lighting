@@ -18,7 +18,7 @@ void setup() {
 
 void loop() {
   // Define the gradient colors from cyan to pink to yellow
-  CRGB colors[3] = { CRGB::Cyan, CRGB::Pink, CRGB::Yellow };
+  CRGB colors[3] = { cyan, pink, yellow };
   int numColors = sizeof(colors) / sizeof(colors[0]);
 
   // Number of LEDs per strip
@@ -50,11 +50,11 @@ void loop() {
     }
 
     FastLED.show();
-    delay(50); // Adjust delay for speed of animation
+    delay(30); // Adjust delay for speed of animation
   }
 
   // Keep all LEDs on for a while at the end
-  delay(1000); // Adjust time to keep the LEDs on
+  delay(800); // Adjust time to keep the LEDs on
 
   // Infinite loop for color movement
   while (true) {
@@ -84,7 +84,7 @@ void loop() {
       }
 
       FastLED.show();
-      delay(100); // Adjust delay for speed of color movement
+      delay(30); // Adjust delay for speed of color movement
     }
   }
 }
