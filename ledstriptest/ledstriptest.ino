@@ -29,28 +29,26 @@ Section sections[] = {
   { 181, 240 }
 };
 
+int currentSensorCount = 0;  // Store current sensor count
+int previousSensorCount = 0;  // Store previous sensor count
+
 void setup() {
   leds = new CRGB[NUM_LEDS];
   FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
-  Serial.begin(9600); // Initialize serial communication
+  Serial.begin(9600);  // Initialize serial communication
 }
 
 void loop() {
-  static int tempIntSensorCount = -0; // Initialize sensor count
-
   if (Serial.available() > 0) {
-    String input = Serial.readStringUntil('\n'); // Read input until newline
-    tempIntSensorCount = input.toInt(); // Convert input to integer
+    String input = Serial.readStringUntil('\n');  // Read input until newline
+    previousSensorCount = currentSensorCount;      // Store previous sensor count
+    currentSensorCount = input.toInt();            // Update current sensor count
   }
 
-  if (tempIntSensorCount == 0) {
+  if (currentSensorCount == 0) {
     IdleAnimation();
-  } else if (tempIntSensorCount > 1 && tempIntSensorCount < 4) {
-    FirstStage();
-  } else if (tempIntSensorCount >= 4 && tempIntSensorCount < 8) {
-    SecondStage();
-  } else if (tempIntSensorCount >= 8) {
-    SimplisticThirdStage();
+  } else if (currentSensorCount == 1) {
+    TransitionToThirdStage(previousSensorCount);
   }
 }
 
@@ -70,53 +68,7 @@ void IdleAnimation() {
   }
 }
 
-void FirstStage() {
-  if ((millis() - lightTimer) > 33) {
-    int maxStep = (sections[0].end - sections[0].start) / 2;
-    for (int step = maxStep; step >= 0; step--) {
-      for (int s = 0; s < 4; s++) {
-        leds[sections[s].start + step] = CRGB(255, 255, 0);
-        leds[sections[s].end - step] = CRGB(255, 255, 0);
-      }
-      delay(20);
-      FastLED.show();
-    }
-
-    for (int step = maxStep; step >= 0; step--) {
-      for (int s = 0; s < 4; s++) {
-        leds[sections[s].start + step] = CRGB(0, 0, 255);
-        leds[sections[s].end - step] = CRGB(0, 0, 255);
-      }
-      delay(20);
-      FastLED.show();
-    }
-    lightTimer = millis();
-  }
-}
-
-void SimplisticThirdStage() {
-  CRGB colors[6] = { pink, purple, red, orange, yellow, blue };
-  int numColors = sizeof(colors) / sizeof(colors[0]);
-  static int currentColor = 0;
-  const int numSteps = sections[0].end - sections[0].start + 1;
-
-  for (int step = 0; step < numSteps; step++) {
-    for (int section = 0; section < 4; section++) {
-      int ledIndex = sections[section].start + step;
-      if (ledIndex <= sections[section].end) {
-        leds[ledIndex] = colors[currentColor];
-      }
-    }
-    FastLED.show();
-  }
-  if (currentColor < numColors) {
-    currentColor++;
-  } else {
-    currentColor = 0;
-  }
-}
-
-void ThirdStage() {
+void TransitionToThirdStage(int previousCount) {
   if ((millis() - lightTimer) > 33) {
     static int shift = 0;
     static unsigned long lastUpdate = 0;
@@ -140,14 +92,17 @@ void ThirdStage() {
           color = blend(colors[1], colors[2], (gradientPos - 128) * 2);
         }
 
-        leds[ledIndex] = color;
+        // Apply gradual transition if sensor count changes
+        if (currentSensorCount != previousCount) {
+          // Here you can adjust how quickly you transition the colors
+          leds[ledIndex] = blend(leds[ledIndex], color, 32); // Adjust the blend factor for speed
+        } else {
+          leds[ledIndex] = color;
+        }
       }
     }
     FastLED.show();
     shift = (shift + animationSpeed) % sections[0].end;
     lightTimer = millis();
   }
-}
-
-void SecondStage() {
 }
