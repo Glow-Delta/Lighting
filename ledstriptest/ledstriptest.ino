@@ -43,7 +43,7 @@ void loop() {
   if (currentSensorCount == 0) {
     IdleAnimation(previousSensorCount);
   } else if (currentSensorCount == 1) {
-    TransitionToThirdStage(previousSensorCount);
+    ActiveAnimation(previousSensorCount);
   }
 }
 
@@ -73,7 +73,7 @@ void IdleAnimation(int previousCount) {
   }
 }
 
-void TransitionToThirdStage(int previousCount) {
+void ActiveAnimation(int previousCount) {
   if ((millis() - lightTimer) > 33) {
     static int shift = 0;
     static unsigned long lastUpdate = 0;
