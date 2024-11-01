@@ -12,8 +12,6 @@ CRGB blue = CRGB(0, 0, 255);     // Blue color
 CRGB lilac = CRGB(221, 117, 244);      // Lilac environment color
 
 int repeatCounter = 3;
-int repeatCounterYellow = 1;
-
 unsigned long lightTimer = millis();
 unsigned long startTime = millis();
 bool idleComplete = false; // Flag to track idle completion
@@ -31,7 +29,7 @@ Section sections[] = {
 };
 
 void setup() {
-  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+ FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
   Serial.begin(9600); // Initialize serial communication
 }
 
@@ -74,62 +72,87 @@ void FirstStage() {
       FastLED.show();
     }
 
-    // Yellow moving outward, repeated based on counter
-    for (int repeat = 0; repeat < repeatCounterYellow; repeat++) {
-      for (int step = 0; step <= maxStep; step++) {
-        for (int s = 0; s < 4; s++) {
-          leds[sections[s].start + step] = yellow;
-          leds[sections[s].end - step] = yellow;
-        }
-        delay(20);
-        FastLED.show();
-      }
-    }
-
-    // Brightness pulsing effect - repeat based on counter
-    for (int repeat = 0; repeat < repeatCounter; repeat++) {
-      // Dim from full brightness to 0
-      for (int pulse = 255; pulse >= 0; pulse -= 15) {
-        FastLED.setBrightness(pulse);
-        FastLED.show();
-        delay(10);
-      }
-      // Brighten from 0 back to full brightness
-      for (int pulse = 0; pulse <= 255; pulse += 15) {
-        FastLED.setBrightness(pulse);
-        FastLED.show();
-        delay(10);
-      }
-    }
-
-    // Increment the counters
-    repeatCounter++;
-    repeatCounterYellow++;
-
-    // Reset counters if repeatCounter reaches 5
-    if (repeatCounter == 5) { 
-      repeatCounter = 3;
-      repeatCounterYellow = 1;
-    }
-
-    // Fade to lilac, then blue, then complete blue inward fill
-    fadeToColor(yellow, lilac, 20);
-    fadeToColor(lilac, blue, 20);
-
-    for (int step = maxStep; step >= 0; step--) {
+    // Yellow moving outward
+    for (int step = 0; step <= maxStep; step++) {
       for (int s = 0; s < 4; s++) {
-        leds[sections[s].start + step] = blue;
-        leds[sections[s].end - step] = blue;
+        leds[sections[s].start + step] = yellow;
+        leds[sections[s].end - step] = yellow;
       }
       delay(20);
       FastLED.show();
     }
 
+    // Brightness pulsing effect - repeat 3 times
+    for (int repeat = 0; repeat < 3; repeat++) {
+      // Dim from full brightness to 0
+      for (int pulse = 255; pulse >= 100; pulse -= 15) {
+        FastLED.setBrightness(pulse);
+        FastLED.show();
+        delay(50);
+      }
+      // Brighten from 0 back to full brightness
+      for (int pulse = 100; pulse <= 255; pulse += 15) {
+        FastLED.setBrightness(pulse);
+        FastLED.show();
+        delay(50);
+      }
+    }
+
+    // Fade to lilac, then blue
+    fadeToColor(yellow, lilac, 20);
+    fadeToColor(lilac, blue, 20);
+
+    // Final gradient effect
+    finalGradientEffect(); // Duration in milliseconds for gradient effect
+
     lightTimer = millis();
   }
 }
 
+// Function to create the final gradient effect
+void finalGradientEffect() {
+  int maxStep50 = (sections[0].end - sections[0].start) / 2; // Metade da seção (50%)
+  int maxStep75 = (sections[0].end - sections[0].start) * 3 / 4; // 75% da seção
 
+  // Fase 1: Gradiente suave até 50%
+  for (int gradStep = 0; gradStep <= maxStep50; gradStep++) {
+    for (int s = 0; s < 4; s++) {
+      if (s % 2 == 0) {
+        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, 0, maxStep50, 0, 255));
+      } else {
+        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, 0, maxStep50, 0, 255));
+      }
+    }
+    FastLED.show();
+    delay(20); // Controla a velocidade do efeito
+  }
+
+  // Fase 2: Expansão do gradiente até 75%
+  for (int gradStep = maxStep50; gradStep <= maxStep75; gradStep++) {
+    for (int s = 0; s < 4; s++) {
+      if (s % 2 == 0) {
+        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, maxStep50, maxStep75, 255, 150));
+      } else {
+        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, maxStep50, maxStep75, 255, 150));
+      }
+    }
+    FastLED.show();
+    delay(20);
+  }
+
+  // Fase 3: Contração do gradiente de volta a 50%
+  for (int gradStep = maxStep75; gradStep >= maxStep50; gradStep--) {
+    for (int s = 0; s < 4; s++) {
+      if (s % 2 == 0) {
+        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, maxStep75, maxStep50, 150, 255));
+      } else {
+        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, maxStep75, maxStep50, 150, 255));
+      }
+    }
+    FastLED.show();
+    delay(20);
+  }
+}
 
 // Function to fade smoothly from one color to another
 void fadeToColor(CRGB startColor, CRGB endColor, int delayTime) {
