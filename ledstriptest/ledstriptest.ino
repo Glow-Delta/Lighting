@@ -83,76 +83,30 @@ void FirstStage() {
     }
 
     // Brightness pulsing effect - repeat 3 times
-    for (int repeat = 0; repeat < 3; repeat++) {
+    for (int repeat = 0; repeat < 2; repeat++) {
       // Dim from full brightness to 0
       for (int pulse = 255; pulse >= 100; pulse -= 15) {
         FastLED.setBrightness(pulse);
         FastLED.show();
-        delay(50);
+        delay(30);
       }
       // Brighten from 0 back to full brightness
       for (int pulse = 100; pulse <= 255; pulse += 15) {
         FastLED.setBrightness(pulse);
         FastLED.show();
-        delay(50);
+        delay(30);
       }
     }
 
     // Fade to lilac, then blue
     fadeToColor(yellow, lilac, 20);
-    fadeToColor(lilac, blue, 20);
+    fadeToColor(lilac, blue, 100);
 
-    // Final gradient effect
-    finalGradientEffect(); // Duration in milliseconds for gradient effect
 
     lightTimer = millis();
   }
 }
 
-// Function to create the final gradient effect
-void finalGradientEffect() {
-  int maxStep50 = (sections[0].end - sections[0].start) / 2; // Metade da seção (50%)
-  int maxStep75 = (sections[0].end - sections[0].start) * 3 / 4; // 75% da seção
-
-  // Fase 1: Gradiente suave até 50%
-  for (int gradStep = 0; gradStep <= maxStep50; gradStep++) {
-    for (int s = 0; s < 4; s++) {
-      if (s % 2 == 0) {
-        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, 0, maxStep50, 0, 255));
-      } else {
-        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, 0, maxStep50, 0, 255));
-      }
-    }
-    FastLED.show();
-    delay(20); // Controla a velocidade do efeito
-  }
-
-  // Fase 2: Expansão do gradiente até 75%
-  for (int gradStep = maxStep50; gradStep <= maxStep75; gradStep++) {
-    for (int s = 0; s < 4; s++) {
-      if (s % 2 == 0) {
-        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, maxStep50, maxStep75, 255, 150));
-      } else {
-        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, maxStep50, maxStep75, 255, 150));
-      }
-    }
-    FastLED.show();
-    delay(20);
-  }
-
-  // Fase 3: Contração do gradiente de volta a 50%
-  for (int gradStep = maxStep75; gradStep >= maxStep50; gradStep--) {
-    for (int s = 0; s < 4; s++) {
-      if (s % 2 == 0) {
-        leds[sections[s].start + gradStep] = blend(blue, yellow, map(gradStep, maxStep75, maxStep50, 150, 255));
-      } else {
-        leds[sections[s].end - gradStep] = blend(blue, yellow, map(gradStep, maxStep75, maxStep50, 150, 255));
-      }
-    }
-    FastLED.show();
-    delay(20);
-  }
-}
 
 // Function to fade smoothly from one color to another
 void fadeToColor(CRGB startColor, CRGB endColor, int delayTime) {
