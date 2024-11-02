@@ -1,6 +1,6 @@
 #include <FastLED.h>
 
-#define NUM_LEDS 240
+#define NUM_LEDS 480
 #define LED_PIN 6
 #define BRIGHTNESS 230
 #define LED_STRIP WS2812B
