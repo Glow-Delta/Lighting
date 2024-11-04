@@ -1,3 +1,5 @@
+//WATCH OUT WITH FOR LOOPS! TRY TO NOT USE THEM AT ALL!!!
+
 #include <FastLED.h>
 
 #define NUM_LEDS 480
