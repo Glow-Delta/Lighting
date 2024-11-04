@@ -12,6 +12,7 @@
 #define RING_COUNT 3    // Number of rings
 #define RING_DELAY 500  // Delay before starting next ring (milliseconds)
 #define repeatCounter 3
+#define delayMs 20
 
 
 
@@ -41,10 +42,10 @@ struct Section {
 };
 
 const Section sections[SECTIONS_COUNT] = {
-  { 0, 120 },
-  { 121, 240 },
-  { 241, 360 },
-  { 361, 480 }
+  { 0, 115 },
+  { 116, 230 },
+  { 231, 345 },
+  { 346, 460 }
 };
 
 // Timing variables
@@ -65,7 +66,7 @@ void fadeToColor(CRGB endColor, uint8_t steps, uint8_t delayMs) {
 
 
 void IdleAnimation() {
-  if ((millis() - lightTimer) > 33) {
+  if ((millis() - lightTimer) > FRAME_TIME) {
     static byte fade = 0;
     static byte up = 1;
 
@@ -82,7 +83,7 @@ void IdleAnimation() {
 
 
 void FirstStage() {
-  if ((millis() - lightTimer) > 33) {
+  if ((millis() - lightTimer) > FRAME_TIME) {
     int maxStep = (sections[0].end - sections[0].start) / 2;
 
     // Yellow filling inward
@@ -249,7 +250,7 @@ void multipleRingAnimation(uint8_t delayMs) {
 
 
 void ThirdStage(int previousCount) {
-  if ((millis() - lightTimer) > 33) {
+  if ((millis() - lightTimer) > FRAME_TIME) {
     static int shift = 0;
     static unsigned long lastUpdate = 0;
     CRGB colors[3] = { CRGB(0, 255, 255), CRGB(252, 3, 94), CRGB(255, 163, 3) };
