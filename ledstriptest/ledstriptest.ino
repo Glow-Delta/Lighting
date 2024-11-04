@@ -1,7 +1,5 @@
 #include <FastLED.h>
 
-#define NUM_LEDS 480
-#define LED_PIN 6
 #define BRIGHTNESS 100
 #define LED_STRIP WS2812B
 
@@ -28,19 +26,6 @@ Section sections[] = {
   { 361, 480 }
 };
 
-void setup() {
- FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
-  Serial.begin(9600); // Initialize serial communication
-}
-
-void loop() {
-  if (!idleComplete && (millis() - startTime < 8000)) {
-    IdleAnimation(); // Run IdleAnimation for the first 5 seconds
-  } else {
-    idleComplete = true; // Mark idle as complete after 5 seconds
-    FirstStage();        // Start FirstStage animation
-  }
-}
 
 void IdleAnimation() {
   if ((millis() - lightTimer) > 33) {
@@ -108,7 +93,7 @@ void FirstStage() {
 }
 
 
-// Function to fade smoothly from one color to another
+// Function to fade smoothly from one color to another - between idleAnimation() and FirstStage()
 void fadeToColor(CRGB startColor, CRGB endColor, int delayTime) {
   for (int fadeValue = 0; fadeValue <= 255; fadeValue += 5) {
     for (int i = 0; i < NUM_LEDS; i++) {
@@ -116,5 +101,40 @@ void fadeToColor(CRGB startColor, CRGB endColor, int delayTime) {
     }
     FastLED.show();
     delay(delayTime);
+  }
+}
+
+// 
+void ThirdStage(int previousCount) {
+  if ((millis() - lightTimer) > 33) {
+    static int shift = 0;
+    static unsigned long lastUpdate = 0;
+    CRGB colors[3] = { CRGB(0, 255, 255), CRGB(252, 3, 94), CRGB(255, 163, 3) };
+
+    for (int s = 0; s < amountOfSections; s++) {
+      int sectionLength = sections[s].end - sections[s].start + 1;
+
+      for (int pos = sectionLength - 1; pos >= 0; pos--) {
+        int ledIndex = sections[s].end - pos;
+
+        int gradientPos = map((pos + shift) % sectionLength, 0, sectionLength - 1, 0, 255);
+
+        CRGB color;
+        if (gradientPos < 128) {
+          color = blend(colors[0], colors[1], gradientPos * 2);
+        } else {
+          color = blend(colors[1], colors[2], (gradientPos - 128) * 2);
+        }
+
+        if (currentSensorCount != previousCount) {
+          leds[ledIndex] = blend(leds[ledIndex], color, 45);
+        } else {
+          leds[ledIndex] = color;
+        }
+      }
+    }
+    FastLED.show();
+    shift = (shift + 2) % sections[0].end;
+    lightTimer = millis();
   }
 }
