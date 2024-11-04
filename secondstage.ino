@@ -7,7 +7,7 @@
 #define SECTIONS_COUNT 4
 #define LEDS_PER_SECTION 60
 #define FRAME_TIME 33  // ~30fps
-#define RING_COUNT 6    // Updated to include 3 pink rings
+#define RING_COUNT 3    // Number of rings
 #define RING_DELAY 500  // Delay before starting next ring (milliseconds)
 
 CRGB leds[NUM_LEDS];
@@ -17,7 +17,7 @@ CRGB originalColors[NUM_LEDS];
 #define YELLOW CRGB(255, 163, 3)
 #define BLUE CRGB(0, 0, 255)
 #define PINK CRGB(250, 5, 148)
-#define CYAN CRGB(53, 238, 247)
+#define BRIGHT_RED CRGB(255, 0, 255); // Bright red color
 
 // Section structure and definitions
 struct Section {
@@ -79,7 +79,7 @@ void saveCurrentColors() {
 
 void multipleRingAnimation(uint8_t delayMs) {
     uint8_t ringPositions[RING_COUNT] = {0};
-    bool ringActive[RING_COUNT] = {true, false, false, false, false, false}; // Updated for 6 rings
+    bool ringActive[RING_COUNT] = {true, false, false};
 
     unsigned long ringStartTime = millis(); // Start time for the ring delay
 
@@ -97,22 +97,16 @@ void multipleRingAnimation(uint8_t delayMs) {
                     uint8_t clearPos = (currentPosition - 1) % LEDS_PER_SECTION;
 
                     // Clear the previous position
-                    for (int offset = -1; offset <= 1; offset++) {
+                    for (int offset = -2; offset <= 2; offset++) {  // Adjusted to make the clear area wider
                         int clearPixel = (clearPos + offset + LEDS_PER_SECTION) % LEDS_PER_SECTION;
                         leds[sectionStart + clearPixel] = originalColors[sectionStart + clearPixel];
                     }
 
-                    // Set new 3-pixel-wide position
+                    // Set new 5-pixel-wide position
                     int ringPixel = (currentPosition % LEDS_PER_SECTION);
-                    for (int offset = -1; offset <= 1; offset++) {
+                    for (int offset = -2; offset <= 2; offset++) {  // Adjusted to make the ring thicker
                         int newPixel = (ringPixel + offset + LEDS_PER_SECTION) % LEDS_PER_SECTION;
-
-                        // Use different colors for different rings
-                        if (ring < 3) {
-                            leds[sectionStart + newPixel] = CYAN; // First 3 rings are cyan
-                        } else {
-                            leds[sectionStart + newPixel] = PINK; // Last 3 rings are pink
-                        }
+                        leds[sectionStart + newPixel] = BRIGHT_RED; // Set to bright red
                     }
                 }
 
@@ -160,11 +154,10 @@ void SecondStage() {
         saveCurrentColors();
         multipleRingAnimation(80);
 
-        // Wait for 4 seconds after displaying all rings
-        delay(4000);
-
-        // Transition to blue
-        fadeToColor(BLUE, 150, 20);
+        if (currentTime - lastCyanPixelTime >= 500) {
+            fadeToColor(BLUE, 150, 20);
+            lastCyanPixelTime = currentTime;
+        }
     }
 }
 
