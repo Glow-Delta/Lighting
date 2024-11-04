@@ -2,106 +2,106 @@
 
 #define NUM_LEDS 240
 #define LED_PIN 6
-#define BRIGHTNESS 230
+#define BRIGHTNESS 200
 #define LED_STRIP WS2812B
+#define SECTIONS_COUNT 4
+#define LEDS_PER_SECTION 60
+#define FRAME_TIME 33  // ~30fps
 
 CRGB leds[NUM_LEDS];
-CRGB originalColors[NUM_LEDS]; // Array to store original colors
+CRGB originalColors[NUM_LEDS];
 
-CRGB yellow = CRGB(255, 163, 3); // Yellow color
-CRGB blue = CRGB(0, 0, 255); // Blue color
-CRGB red = CRGB(221, 117, 244); // Red color
-CRGB pink = CRGB(250, 5, 148); // Pink color
+// Colors defined with #define to save memory
+#define YELLOW CRGB(255, 163, 3)
+#define BLUE CRGB(0, 0, 255)
+#define PINK CRGB(250, 5, 148)
+#define CYAN CRGB(53, 238, 247)
 
-unsigned long lightTimer = millis();
-bool whitePixelsPresent = false; // Flag to track if any white pixels are present
-unsigned long lastWhitePixelTime = 0; // Timer for 0.5-second delay after last white pixel
-
+// Section structure and definitions
 struct Section {
-    int start;
-    int end;
+    uint8_t start;
+    uint8_t end;
 };
 
-Section sections[] = {
-    {0, 60},
-    {61, 120},
-    {121, 180},
-    {181, 240}
+const Section sections[SECTIONS_COUNT] = {
+    {0, 59},
+    {60, 119},
+    {120, 179},
+    {180, 239}
 };
+
+// Timing variables
+unsigned long lastFrameTime = 0;
+
+// Animation functions
+void saveCurrentColors() {
+    memcpy(originalColors, leds, sizeof(leds));
+}
+
+void multipleRingAnimation(uint8_t delayMs) {
+    const uint8_t totalRings = 6;  // Total rings: 3 cyan + 3 pink
+    uint8_t displayedRings = 0;      // Counter for displayed rings
+    unsigned long startTime = millis(); // Start time for the fade effect
+
+    while (displayedRings < totalRings) {
+        unsigned long currentTime = millis();
+        
+        // Activate and display rings
+        if (currentTime - startTime >= displayedRings * delayMs) {
+            CRGB color = (displayedRings < 3) ? CYAN : PINK; // Determine color
+            
+            for (int section = 0; section < SECTIONS_COUNT; section++) {
+                uint8_t sectionStart = sections[section].start;
+                uint8_t ringPixel = (displayedRings % LEDS_PER_SECTION);
+                
+                // Clear previous position (3-pixel-wide)
+                for (int offset = -1; offset <= 1; offset++) {
+                    int clearPixel = (ringPixel + offset + LEDS_PER_SECTION) % LEDS_PER_SECTION;
+                    leds[sectionStart + clearPixel] = originalColors[sectionStart + clearPixel];
+                }
+
+                // Set new position (3-pixel-wide)
+                for (int offset = -1; offset <= 1; offset++) {
+                    int newPixel = (ringPixel + offset + LEDS_PER_SECTION) % LEDS_PER_SECTION;
+                    leds[sectionStart + newPixel] = color;
+                }
+            }
+            displayedRings++; // Increment the counter after displaying the ring
+        }
+        
+        // Fade to blue after 4 seconds
+        if (currentTime - startTime >= 4000) {
+            for (int section = 0; section < SECTIONS_COUNT; section++) {
+                uint8_t sectionStart = sections[section].start;
+                for (int pixel = 0; pixel < LEDS_PER_SECTION; pixel++) {
+                    leds[sectionStart + pixel] = BLUE; // Set all LEDs to blue
+                }
+            }
+            break; // Exit the loop after fading to blue
+        }
+
+        FastLED.show();
+        delay(delayMs);
+    }
+}
+
+void SecondStage() {
+    unsigned long currentTime = millis();
+    if (currentTime - lastFrameTime >= FRAME_TIME) {
+        lastFrameTime = currentTime;
+
+        // Placeholder for other animations if needed
+        // saveCurrentColors();
+        multipleRingAnimation(80);
+    }
+}
 
 void setup() {
     FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
-    Serial.begin(9600); // Initialize serial communication
+    FastLED.setBrightness(BRIGHTNESS);
+    Serial.begin(9600);
 }
 
 void loop() {
     SecondStage();
-}
-
-void SecondStage() {
-    if ((millis() - lightTimer) > 33) {
-        lightTimer = millis(); // Reset timer to prevent rapid execution
-        int maxStep = (sections[0].end - sections[0].start) / 2;
-
-        // Existing animation code...
-
-        // After the bright white ring animation
-        // Save the current colors (yellow and pink) to the originalColors array
-        for (int i = 0; i < NUM_LEDS; i++) {
-            originalColors[i] = leds[i];
-        }
-
-        // Bright white ring animation with heartbeat pulse effect
-        whitePixelsPresent = false;  // Only reset once at the start of the ring animation
-        for (int currentPosition = 0; currentPosition < 60; currentPosition++) {
-            // Pulse effect logic...
-
-            FastLED.show();
-            delay(80); // Adjust this delay as needed
-
-            // Restore original colors for pixels in the ring
-            for (int section = 0; section < 4; section++) {
-                int sectionStart = section * 60;
-
-                for (int i = 0; i < 7; i++) {
-                    int ringPosition = (currentPosition + i) % 60;
-                    leds[sectionStart + ringPosition] = originalColors[sectionStart + ringPosition];
-                }
-            }
-        }
-
-        // Check if all white pixels have turned off after ring animation
-        if (!whitePixelsPresent) {
-            // Start the 0.5-second delay timer if it's not running already
-            if (lastWhitePixelTime == 0) {
-                lastWhitePixelTime = millis();
-            }
-        } else {
-            lastWhitePixelTime = 0; // Reset if white pixels are still present
-        }
-
-        // Fade to blue after the white pixels disappear
-        if (lastWhitePixelTime > 0 && millis() - lastWhitePixelTime >= 500) {
-            fadeToColor(blue, 20);
-            lastWhitePixelTime = 0; // Reset for future use
-        }
-    }
-}
-
-void fadeToColor(CRGB endColor, int delayTime) {
-    int steps = 150;  // Increased steps for smooth transition
-    CRGB currentColor = leds[0]; // Start from the first LED's color
-    for (int fadeValue = 0; fadeValue <= steps; fadeValue++) {
-        float progress = (float)fadeValue / steps;
-
-        // Smooth transition calculation
-        for (int i = 0; i < NUM_LEDS; i++) {
-            leds[i] = blend(originalColors[i], endColor, smoothProgress * 255);
-        }
-
-        FastLED.show();
-        delay(delayTime);
-    }
-}
-
 }
