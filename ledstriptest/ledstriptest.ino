@@ -1,6 +1,6 @@
 #include <FastLED.h>
 
-#define NUM_LEDS 240
+#define NUM_LEDS 480
 #define LED_PIN 6
 #define BRIGHTNESS 100
 #define LED_STRIP WS2812B
@@ -22,10 +22,10 @@ struct Section {
 };
 
 Section sections[] = {
-  { 0, 60 },
-  { 61, 120 },
-  { 121, 180 },
-  { 181, 240 }
+  { 0, 120 },
+  { 121, 240 },
+  { 241, 360 },
+  { 361, 480 }
 };
 
 void setup() {
